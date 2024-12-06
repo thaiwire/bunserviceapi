@@ -13,6 +13,7 @@ const app = new Elysia()
   )
   .get("/", () => "Hello Elysia")
   .post("/api/user/signin", UserController.signIn)
+  .put("/api/user/update", UserController.update)
   .listen(3001);
 
 console.log(
