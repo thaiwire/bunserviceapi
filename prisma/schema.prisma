@@ -17,7 +17,40 @@ model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
   password  String
-  level     String   @default("user") // user, admin
+  level     String   @default("user") // user, admin ,engineer
   createdAt DateTime @default(now())
   status    String   @default("active") // active, inactive
+  sectionId Int?
+  section   Section? @relation(fields: [sectionId], references: [id])
+}
+
+model Device {
+  id         Int      @id @default(autoincrement())
+  name       String
+  barcode    String
+  serial     String
+  expireDate DateTime
+  remark     String
+  status     String   @default("active") // active, inactive
+  createdAt  DateTime @default(now())
+}
+
+// แผนก
+model Department {
+  id        Int       @id @default(autoincrement())
+  name      String
+  status    String    @default("active") // active, inactive
+  createdAt DateTime  @default(now())
+  Section   Section[]
+}
+
+// ฝ่าย
+model Section {
+  id           Int        @id @default(autoincrement())
+  name         String
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+  status       String     @default("active") // active, inactive
+  createdAt    DateTime   @default(now())
+  users        User[]
 }

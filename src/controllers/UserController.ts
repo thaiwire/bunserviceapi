@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { listen } from "bun";
 
 const prisma = new PrismaClient();
 
@@ -58,20 +59,132 @@ export const UserController = {
 
       const id = payload.id;
       const oldUser = await prisma.user.findUnique({
-        where: { id },
+        where: {
+          id,
+        },
       });
-
+      if (!oldUser) {
+        return { message: "User not found" };
+      }
       const newData = {
         username: body.username,
-        password: body.password ?? oldUser?.password,
+        password: body.password == "" ? oldUser?.password : body.password,
       };
-
-      const user = await prisma.user.update({
-        where: { id },
+      if (body.password) {
+        newData.password = body.password;
+      }
+      await prisma.user.update({
+        where: {
+          id,
+        },
         data: newData,
       });
+      return { message: "success" };
+    } catch (error) {
+      return error;
+    }
+  },
+  list: async () => {
+    try {
+      const users = await prisma.user.findMany({
+        select: {
+          id: true,
+          username: true,
+          level: true,
+        },
+        where: {
+          status: "active",
+        },
+        orderBy: {
+          id: "desc",
+        },
+      });
+      return users;
+    } catch (error) {
+      return error;
+    }
+  },
+  create: async ({
+    body,
+  }: {
+    body: {
+      username: string;
+      password: string;
+      level: string;
+    };
+  }) => {
+    try {
+      await prisma.user.create({
+        data: {
+          username: body.username,
+          password: body.password,
+          level: body.level,
+        },
+      });
+      return { message: "success" };
+    } catch (error) {
+      return error;
+    }
+  },
+  remove: async ({ params }: { params: { id: string } }) => {
+    try {
+      const id = parseInt(params.id);
+      const user = await prisma.user.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!user) {
+        return { message: "User not found" };
+      }
+      await prisma.user.update({
+        where: {
+          id: parseInt(params.id),
+        },
+        data: {
+          status: "inactive",
+        },
+      });
+      return { message: "success" };
+    } catch (error) {
+      return error;
+    }
+  },
+  updateUser: async ({
+    body,
+    params,
+  }: {
+    body: {
+      username: string;
+      password: string;
+      level: string;
+    };
+    params: {
+      id: string;
+    };
+  }) => {
+    try {
+      const id = parseInt(params.id);
+      const oldUser = await prisma.user.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!oldUser) {
+        return { message: "User not found" };
+      }
+      const newData = {
+        username: body.username,
+        password: body.password == "" ? oldUser?.password : body.password,
+        level: body.level,
+      };
 
-      //  console.log(user);
+      await prisma.user.update({
+        where: {
+          id: parseInt(params.id),
+        },
+        data: newData,
+      });
       return { message: "success" };
     } catch (error) {
       return error;
