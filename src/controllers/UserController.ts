@@ -91,6 +91,18 @@ export const UserController = {
           id: true,
           username: true,
           level: true,
+          section: {
+            select: {
+              name: true,
+              id: true,
+              department: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
         },
         where: {
           status: "active",
@@ -111,6 +123,7 @@ export const UserController = {
       username: string;
       password: string;
       level: string;
+      sectionId: number;
     };
   }) => {
     try {
@@ -119,6 +132,7 @@ export const UserController = {
           username: body.username,
           password: body.password,
           level: body.level,
+          sectionId: body.sectionId,
         },
       });
       return { message: "success" };
@@ -158,6 +172,7 @@ export const UserController = {
       username: string;
       password: string;
       level: string;
+      sectionId: number;
     };
     params: {
       id: string;
@@ -177,6 +192,7 @@ export const UserController = {
         username: body.username,
         password: body.password == "" ? oldUser?.password : body.password,
         level: body.level,
+        sectionId: body.sectionId,
       };
 
       await prisma.user.update({
